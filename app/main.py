@@ -3,6 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from app.databases.database import check_db, init_db
 from app.routers.auth import router as auth_router
 from app.routers.comments import router as comment_router
 from app.routers.likes import router as like_router
@@ -27,6 +28,8 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup():
+    init_db()
+    check_db()
     print("✅ Database Connected Successfully")
     print("🚀 FastAPI Server Started")
     print("📄 Swagger Docs: http://127.0.0.1:8000/docs")
@@ -43,4 +46,13 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 def home():
     return {
         "message": "Backend Running Successfully 🚀"
+    }
+
+
+@app.get("/health")
+def health():
+    check_db()
+    return {
+        "status": "ok",
+        "database": "connected",
     }
